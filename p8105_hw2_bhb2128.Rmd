@@ -12,6 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 Import packages.
 ```{r packages}
 library(tidyverse)
+library(readxl)
 ```
 
 ## Problem 1
@@ -70,13 +71,34 @@ ada_compliant2 = filter(tidy_distinct_stations, ada == TRUE)
 There are `r nrow(a_train)` distinct stations that serve the A.
 There are `r nrow(ada_compliant2)` ADA compliant stations (this question was asked twice).
 
-Problem 1
+## Problem 2
+
+```{r}
+trash_data = read_excel(path = "./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx", sheet = "Mr. Trash Wheel", range = cell_cols("A:M")) %>% 
+  janitor::clean_names() %>% 
+  mutate(sports_balls = round(sports_balls)) %>% 
+  mutate(sports_balls = as.integer(sports_balls))
+
+trash_data_2016 = trash_data %>% 
+   filter(year == "2016")
+```
+
+The trash_data dataset contains about Mr. Trash Wheel, a contraption that removes trash from the Inner harbor in Baltimore, Maryland. The data set has `r nrow(trash_data)` rows and `r ncol(trash_data)` columns. The data set details the weight and volume of trash collected by Mr. Trash Wheel into various dumpsters each month from May 2014 through August 2017. The type of trash is broken down into several categories including plastic bottels, grocery bags, sports balls, and several other trash types. The median number of sports balls per dumpster in 2016 was `r summarise(trash_data_2016, median(sports_balls))`.
+
+```{r}
+rain_2016 = read_excel(path = "./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx", sheet = "2016 Precipitation", range = cell_rows(2:14)) %>% 
+  janitor::clean_names() %>%
+  drop_na() %>% 
+  mutate(year = "2016")
+
+rain_2017 = read_excel(path = "./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx", sheet = "2017 Precipitation", range = cell_rows(2:14)) %>% 
+  janitor::clean_names() %>%
+  drop_na() %>% 
+  mutate(year = "2017")
+
+rain_data = bind_rows(rain_2016, rain_2017) %>% 
+  mutate(month = month.name[month])
+```
 
 
-
-Answer the following questions using these data:
-
-How many distinct stations are there? Note that stations are identified both by name and by line (e.g. 125th St A/B/C/D; 125st 1; 125st 4/5); the distinct function may be useful here.
-How many stations are ADA compliant?
-What proportion of station entrances / exits without vending allow entrance?
-Reformat data so that route number and route name are distinct variables. How many distinct stations serve the A train? How many are ADA compliant?
+Write a paragraph about these data; you are encouraged to use inline R. Be sure to note the number of observations in both resulting datasets, and give examples of key variables. For available data, what was the total precipitation in 2017? What was the median number of sports balls in a dumpster in 2016 

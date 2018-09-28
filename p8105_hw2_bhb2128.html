@@ -139,6 +139,7 @@ $(document).ready(function () {
 <pre><code>## -- Conflicts ---------------------------------------------------------------- tidyverse_conflicts() --
 ## x dplyr::filter() masks stats::filter()
 ## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(readxl)</code></pre>
 <div id="problem-1" class="section level2">
 <h2>Problem 1</h2>
 <p>Read and clean the data; retain line, station, name, station latitude / longitude, routes served, entry, vending, entrance type, and ADA compliance. Convert the entry variable from character (YES vs NO) to a logical variable (the ifelse or recode function may be useful).</p>
@@ -183,9 +184,30 @@ a_train = tidy_distinct_stations %&gt;%
 
 ada_compliant2 = filter(tidy_distinct_stations, ada == TRUE)</code></pre>
 <p>There are 60 distinct stations that serve the A. There are 84 ADA compliant stations (this question was asked twice).</p>
-<p>Problem 1</p>
-<p>Answer the following questions using these data:</p>
-<p>How many distinct stations are there? Note that stations are identified both by name and by line (e.g. 125th St A/B/C/D; 125st 1; 125st 4/5); the distinct function may be useful here. How many stations are ADA compliant? What proportion of station entrances / exits without vending allow entrance? Reformat data so that route number and route name are distinct variables. How many distinct stations serve the A train? How many are ADA compliant?</p>
+</div>
+<div id="problem-2" class="section level2">
+<h2>Problem 2</h2>
+<pre class="r"><code>trash_data = read_excel(path = &quot;./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx&quot;, sheet = &quot;Mr. Trash Wheel&quot;, range = cell_cols(&quot;A:M&quot;)) %&gt;% 
+  janitor::clean_names() %&gt;% 
+  mutate(sports_balls = round(sports_balls)) %&gt;% 
+  mutate(sports_balls = as.integer(sports_balls))
+
+trash_data_2016 = trash_data %&gt;% 
+   filter(year == &quot;2016&quot;)</code></pre>
+<p>The trash_data dataset contains about Mr. Trash Wheel, a contraption that removes trash from the Inner harbor in Baltimore, Maryland. The data set has 360 rows and 13 columns. The data set details the weight and volume of trash collected by Mr. Trash Wheel into various dumpsters each month from May 2014 through August 2017. The type of trash is broken down into several categories including plastic bottels, grocery bags, sports balls, and several other trash types. The median number of sports balls per dumpster in 2016 was 26</p>
+<pre class="r"><code>rain_2016 = read_excel(path = &quot;./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx&quot;, sheet = &quot;2016 Precipitation&quot;, range = cell_rows(2:14)) %&gt;% 
+  janitor::clean_names() %&gt;%
+  drop_na() %&gt;% 
+  mutate(year = &quot;2016&quot;)
+
+rain_2017 = read_excel(path = &quot;./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx&quot;, sheet = &quot;2017 Precipitation&quot;, range = cell_rows(2:14)) %&gt;% 
+  janitor::clean_names() %&gt;%
+  drop_na() %&gt;% 
+  mutate(year = &quot;2017&quot;)
+
+rain_data = bind_rows(rain_2016, rain_2017) %&gt;% 
+  mutate(month = month.name[month])</code></pre>
+<p>Write a paragraph about these data; you are encouraged to use inline R. Be sure to note the number of observations in both resulting datasets, and give examples of key variables. For available data, what was the total precipitation in 2017? What was the median number of sports balls in a dumpster in 2016</p>
 </div>
 
 
