@@ -2,7 +2,9 @@
 title: "homework2"
 author: "Brennan Baker"
 date: "September 26, 2018"
-output: html_document
+output:
+  github_document:
+    toc: true
 ---
 
 ```{r setup, include=FALSE}
@@ -52,7 +54,7 @@ There are `r nrow(no_vending_allow_entry)` station entrances / exits without ven
 
 ```{r}
 tidy_subway_data = subway_data %>% 
-  gather(key = route_number, value = route_name, route1:route11) %>% 
+  gather(key = route_number, value = route_name, starts_with("route")) %>% 
   separate(route_number, into = c("remove", "route_number"), sep = "e") %>% 
   select(-remove)
 ```
@@ -65,7 +67,7 @@ tidy_distinct_stations = tidy_subway_data %>%
 a_train = tidy_distinct_stations %>% 
   filter(route_name == "A")
 
-ada_compliant2 = filter(tidy_distinct_stations, ada == TRUE)
+ada_compliant2 = filter(a_train, ada == TRUE)
 ```
 
 There are `r nrow(a_train)` distinct stations that serve the A.
@@ -83,7 +85,7 @@ trash_data_2016 = trash_data %>%
    filter(year == "2016")
 ```
 
-The trash_data dataset contains about Mr. Trash Wheel, a contraption that removes trash from the Inner harbor in Baltimore, Maryland. The data set has `r nrow(trash_data)` rows and `r ncol(trash_data)` columns. The data set details the weight and volume of trash collected by Mr. Trash Wheel into various dumpsters each month from May 2014 through August 2017. The type of trash is broken down into several categories including plastic bottels, grocery bags, sports balls, and several other trash types. The median number of sports balls per dumpster in 2016 was `r summarise(trash_data_2016, median(sports_balls))`.
+The trash_data dataset contains data about Mr. Trash Wheel, a contraption that removes trash from the Inner Harbor in Baltimore, Maryland. The data set has `r nrow(trash_data)` rows and `r ncol(trash_data)` columns. The data set details the weight and volume of trash collected by Mr. Trash Wheel into various dumpsters each month from May 2014 through August 2017. The types of trash are sorted into several categories including plastic bottels, grocery bags, sports balls, and other trash types. The median number of sports balls per dumpster in 2016 was `r summarise(trash_data_2016, median(sports_balls))`.
 
 ```{r}
 rain_2016 = read_excel(path = "./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx", sheet = "2016 Precipitation", range = cell_rows(2:14)) %>% 
@@ -97,8 +99,57 @@ rain_2017 = read_excel(path = "./data/HealthyHarborWaterWheelTotals2017-9-26.xls
   mutate(year = "2017")
 
 rain_data = bind_rows(rain_2016, rain_2017) %>% 
-  mutate(month = month.name[month])
+  mutate(month = month.name[month]) %>% 
+  rename(precipitation = total) %>% 
+  select (year, month, precipitation)
 ```
 
+The rain_data data set contains precipitation data associated with the Mr. Trash Wheel project. Presumably, this data is about monthyl precipitation rates from January 2016 through August 2017 in the Inner Harbor in Baltimore, Maryland. The data set contains `r nrow(rain_data)` rows and `r ncol(rain_data)` columns. The variables are month, year, and precipitation. Thus, each row contains the total precipitation value from each given year and month.
 
-Write a paragraph about these data; you are encouraged to use inline R. Be sure to note the number of observations in both resulting datasets, and give examples of key variables. For available data, what was the total precipitation in 2017? What was the median number of sports balls in a dumpster in 2016 
+## Problem 3
+
+```{r load data package}
+library(p8105.datasets)
+#the line below installs the package
+#devtools::install_github("p8105/p8105.datasets")
+```
+
+I will tidy the data by: cleaning the names; keeping only the rows where the topic is overall health; removing state from the county column and renaming so that one column has state and another column has county; and excluding unnecessary variables. I arranged by data_value in order to investigate what range of values correspond to response (e.g. "Poor", "Very Good:).
+```{r}
+brfss = brfss_smart2010 %>% 
+  janitor::clean_names() %>% 
+  filter(topic == "Overall Health") %>% 
+  separate(locationdesc, into = c("state", "county"), sep = "- ") %>% 
+  select(year, state, county, response, data_value) %>% 
+  arrange(data_value)
+  
+```
+
+It looks like the response variable does not depend on the data_value variable. Thus, I will choose my own values of data_value to correspond to "Poor", "Very Good", etc. 
+```{r}
+brfss2 = brfss %>% 
+  mutate(response = ifelse(data_value %in% 0.0:4.9, "Poor",
+                           ifelse(data_value %in% 5.0:14.9, "Fair",
+                                  ifelse(data_value %in% 15.0:29.9, "Good",
+                                         ifelse(data_value %in% 30.0:39.9, "Very Good", "Excellent")))))
+```
+
+The above code turns everything in the response value column to excellent, except when data value == 1 response becomes poor. Looks like %in% does not work with decimals, which is a problem. I am going to multiply all data_values by 10
+
+```{r}
+brfss3 = brfss %>% mutate(data_value = data_value * 10) %>% 
+  mutate(response = ifelse(data_value %in% 0:49, "Poor",
+                           ifelse(data_value %in% 50:149, "Fair",
+                                  ifelse(data_value %in% 150:299, "Good",
+                                         ifelse(data_value %in% 300:399, "Very Good",
+                                                ifelse(is.na(data_value), NA, "Excellent"))))))
+
+```
+
+For this question:
+
+format the data to use appropriate variable names;
+focus on the “Overall Health” topic
+exclude variables for class, topic, question, sample size, and everything from lower confidence limit to GeoLocation
+structure data so that responses (excellent to poor) are variables taking the value of Data_value
+create a new variable showing the proportion of responses that were “Excellent” or “Very Good”
