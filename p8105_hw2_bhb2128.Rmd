@@ -17,7 +17,9 @@ library(tidyverse)
 library(readxl)
 ```
 
-## Problem 1
+#Problem 1
+
+##read and clean data
 
 Read and clean the data; retain line, station, name, station latitude / longitude, routes served, entry, vending, entrance type, and ADA compliance. Convert the entry variable from character (YES vs NO) to a logical variable (the ifelse or recode function may be useful).
 
@@ -29,7 +31,11 @@ subway_data <- read_csv(file = "./data/NYC_Transit_Subway_Entrance_And_Exit_Data
 
 ```
 
+##data summary
+
 This dataset contains NYC subway entrance and exit data. After importing the data, I cleaned the names and eliminated unnecessary variables. The resulting dataset contains the following variables: the line and station names, the longitude and latitude of each station, the routes that each station serves, whether or not each station allows entrance (entry), vending, and ADA compliance, and the type of entry. I changed the coding of the entry variable from YES/NO to TRUE/FALSE. The dataset contains `r nrow(subway_data)` rows and `r ncol(subway_data)` columns. The data set is almost tidy because the columns are variables and the rows are observations. However, the route number columns contain information about two variables, the number of the route and the name of the route.
+
+##answer questions about the data
 
 ```{r distinct stations}
 distinct_stations = subway_data %>% distinct(line, station_name, .keep_all = TRUE)
@@ -52,6 +58,8 @@ no_vending_allow_entry = subway_data %>% #move back to subway_data because each 
 
 There are `r nrow(no_vending_allow_entry)` station entrances / exits without vending that allow entrance.
 
+##reformat data
+
 Reformat data so that route number and route name are distinct variables.
 ```{r tidy subway data}
 tidy_subway_data = subway_data %>% 
@@ -60,7 +68,8 @@ tidy_subway_data = subway_data %>%
   select(-remove)
 ```
 
-How many distinct stations serve the A train? Of the stations that serve the A train, how many are ADA compliant?
+##answer questions about reformatted data
+
 ```{r a train}
 a_train = tidy_subway_data %>% 
   distinct(line, station_name, .keep_all = TRUE) %>% #need distincy stations identified by name and line
@@ -69,11 +78,14 @@ a_train = tidy_subway_data %>%
 ada_compliant2 = filter(a_train, ada == TRUE)
 ```
 
+How many distinct stations serve the A train?
 There are `r nrow(a_train)` distinct stations that serve the A.
+Of the stations that serve the A train, how many are ADA compliant?
 There are `r nrow(ada_compliant2)` ADA compliant stations that serve the A train.
 
-## Problem 2
+# Problem 2
 
+## read and clean trash data
 ```{r import trash data}
 trash_data = read_excel(path = "./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx", sheet = "Mr. Trash Wheel", range = cell_cols("A:M")) %>% 
   janitor::clean_names() %>% 
@@ -84,8 +96,12 @@ trash_data_2016 = trash_data %>%
    filter(year == "2016")
 ```
 
+##summary of trash data
 The trash_data dataset contains data about Mr. Trash Wheel, a contraption that removes trash from the Inner Harbor in Baltimore, Maryland. The data set has `r nrow(trash_data)` rows and `r ncol(trash_data)` columns. The data set details the weight and volume of trash collected by Mr. Trash Wheel into various dumpsters each month from May 2014 through August 2017. The types of trash are sorted into several categories including plastic bottels, grocery bags, sports balls, and other trash types. The median number of sports balls per dumpster in 2016 was `r summarise(trash_data_2016, median(sports_balls))`.
 
+##read and clean rain data
+
+Below I omit rows without precipitation data and add a variable year. Then I combine the 2016 and 2017 datasets and convert month to a character variable.
 ```{r import and combine rain data}
 rain_2016 = read_excel(path = "./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx", sheet = "2016 Precipitation", range = cell_rows(2:14)) %>% 
   janitor::clean_names() %>%
@@ -103,9 +119,13 @@ rain_data = bind_rows(rain_2016, rain_2017) %>%
   select (year, month, precipitation)
 ```
 
+##summary of rain data
+
 The rain_data data set contains precipitation data associated with the Mr. Trash Wheel project. Presumably, this data is about monthyl precipitation rates from January 2016 through August 2017 in the Inner Harbor in Baltimore, Maryland. The data set contains `r nrow(rain_data)` rows and `r ncol(rain_data)` columns. The variables are month, year, and precipitation. Thus, each row contains the total precipitation value from each given year and month.
 
-## Problem 3
+# Problem 3
+
+##load data package and tidy data
 
 ```{r load data package}
 library(p8105.datasets)
@@ -133,6 +153,8 @@ brfss = brfss %>%
   mutate(proportion_above_average = (excellent + very_good)/(fair + good + poor + excellent + very_good))
 ```
 
+##answer questions about data
+
 Find the number of unique locations, if every state is represented, and the state that appears most.
 ```{r unique locations}
 brfss_distinct = brfss %>% distinct(state, county, .keep_all = TRUE)
@@ -153,6 +175,8 @@ brfss %>% filter(year == 2002) %>%
 
 The median of the excellent response value in 2002 was 23.6.
 
+##plot histogram of excellent responses in 2002
+
 ```{r histogram of excellent in 2002}
 brfss %>% filter(year == 2002) %>% 
   filter(!is.na(excellent)) %>%
@@ -166,14 +190,15 @@ brfss %>% filter(year == 2002) %>%
   theme_bw()
 ```
 
-Filter data and plot proportion of “excellent” response values in New York County and Queens County in each year from 2002 to 2010.
+##scatterplot of excellent responses in New York and Queens County
 
-```{r}
+Below I filter data and plot proportion of “excellent” response values in New York County and Queens County in each year from 2002 to 2010.
+```{r excellent responses in New York and Queens County}
 brfss %>% 
   filter(county %in% c("New York County", "Queens County")) %>%
   mutate(proportion_excellent = (excellent)/(excellent + very_good + fair + good + poor)) %>% 
   ggplot(aes(x = year, y = proportion_excellent, color = county))+
-  geom_point() +
+  geom_point(size = 4) +
   labs(
     title = "proportion of excellent responses in New York and Queens County",
     x = "year",
