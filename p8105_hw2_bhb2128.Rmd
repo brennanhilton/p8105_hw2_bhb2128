@@ -87,7 +87,7 @@ There are `r nrow(ada_compliant2)` ADA compliant stations that serve the A train
 
 ## read and clean trash data
 ```{r import trash data}
-trash_data = read_excel(path = "./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx", sheet = "Mr. Trash Wheel", range = cell_cols("A:M")) %>% 
+trash_data = read_excel(path = "./data/HealthyHarborWaterWheelTotals2018-7-28.xlsx", sheet = "Mr. Trash Wheel", range = cell_cols("A:M")) %>% 
   janitor::clean_names() %>% 
   mutate(sports_balls = round(sports_balls)) %>% 
   mutate(sports_balls = as.integer(sports_balls))
@@ -103,7 +103,7 @@ The trash_data dataset contains data about Mr. Trash Wheel, a contraption that r
 
 Below I omit rows without precipitation data and add a variable year. Then I combine the 2016 and 2017 datasets and convert month to a character variable.
 ```{r import and combine rain data}
-rain_2016 = read_excel(path = "./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx", sheet = "2016 Precipitation", range = cell_rows(2:14)) %>% 
+rain_2016 = read_excel(path = "./data/HealthyHarborWaterWheelTotals2018-7-28.xlsx", sheet = "2016 Precipitation", range = cell_rows(2:14)) %>% 
   janitor::clean_names() %>%
   drop_na() %>% 
   mutate(year = "2016")
