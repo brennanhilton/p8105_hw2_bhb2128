@@ -97,7 +97,7 @@ trash_data_2016 = trash_data %>%
 ```
 
 ##summary of trash data
-The trash_data dataset contains data about Mr. Trash Wheel, a contraption that removes trash from the Inner Harbor in Baltimore, Maryland. The data set has `r nrow(trash_data)` rows and `r ncol(trash_data)` columns. The data set details the weight and volume of trash collected by Mr. Trash Wheel into various dumpsters each month from May 2014 through August 2017. The types of trash are sorted into several categories including plastic bottels, grocery bags, sports balls, and other trash types. The median number of sports balls per dumpster in 2016 was `r summarise(trash_data_2016, median(sports_balls))`.
+The trash_data dataset contains data about Mr. Trash Wheel, a contraption that removes trash from the Inner Harbor in Baltimore, Maryland. The data set has `r nrow(trash_data)` rows and `r ncol(trash_data)` columns. The data set details the weight and volume of trash collected by Mr. Trash Wheel into various dumpsters each month from May 2014 through July 2018. The types of trash are sorted into several categories including plastic bottels, grocery bags, sports balls, and other trash types. The median number of sports balls per dumpster in 2016 was `r summarise(trash_data_2016, median(sports_balls))`.
 
 ##read and clean rain data
 
